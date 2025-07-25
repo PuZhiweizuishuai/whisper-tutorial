@@ -9,6 +9,12 @@
 	"compatibility_date": "2025-07-25",
 	"observability": {
 		"enabled": true
+	},
+    "compatibility_flags": [
+    "nodejs_compat"
+    ],
+	"ai": {
+		"binding": "AI"
 	}
 	/**
 	 * Smart Placement
