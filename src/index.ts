@@ -43,20 +43,18 @@ async function getAudioChunks(audioUrl: string): Promise<ArrayBuffer[]> {
 async function transcribeChunk(
   chunkBuffer: ArrayBuffer,
   env: Env,
-  language: string,
-  vad_filter: string,
 ): Promise<string> {
   const base64 = Buffer.from(chunkBuffer, "binary").toString("base64");
   const res = await env.AI.run("@cf/openai/whisper-large-v3-turbo", {
     audio: base64,
     // 可选参数（如果需要，取消注释并设置）：
     task: "transcribe", // 或 "translate"
-    language: "zh",
-    vad_filter: "false",
+    // language: "en",
+    // vad_filter: "false",
     // initial_prompt: "如果需要，提供上下文。",
     // prefix: "转录：",
   });
-  return res.text; // 假设转录结果包括一个 "text" 属性。
+  return JSON.stringify(res); // 假设转录结果包括一个 "text" 属性。
 }
 
 /**
@@ -72,10 +70,8 @@ export default {
     // 从查询参数中提取音频 URL。
     const { searchParams } = new URL(request.url);
     const audioUrl = searchParams.get("url");
-	const language = searchParams.get("language");
-	const vad_filter = searchParams.get("vad_filter");
 
-    if (!audioUrl || !language || !vad_filter) {
+    if (!audioUrl) {
       return new Response("缺少 'url' 查询参数", { status: 400 });
     }
 
@@ -86,7 +82,7 @@ export default {
     // 处理每个块并构建完整的转录。
     for (const chunk of audioChunks) {
       try {
-        const transcript = await transcribeChunk(chunk, env, language, vad_filter);
+        const transcript = await transcribeChunk(chunk, env);
         fullTranscript += transcript + "\n";
       } catch (error) {
         fullTranscript += "[转录块时出错]\n";
